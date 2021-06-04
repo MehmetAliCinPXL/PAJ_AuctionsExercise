@@ -2,6 +2,7 @@ package be.pxl.auctions.service;
 
 import be.pxl.auctions.dao.UserDao;
 import be.pxl.auctions.model.User;
+import be.pxl.auctions.model.builders.UserBuilder;
 import be.pxl.auctions.rest.resource.UserDTO;
 import be.pxl.auctions.util.exception.UserNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,7 +12,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -31,25 +31,26 @@ public class UserServiceGetUserByIdTest {
 
 	@BeforeEach
 	public void init() {
-		user = new User();
-		user.setId(USER_ID);
-		user.setFirstName("Mark");
-		user.setLastName("Zuckerberg");
-		user.setDateOfBirth(LocalDate.of(1989, 5, 3));
-		user.setEmail("mark@facebook.com");
+		user = UserBuilder.anUser().withId(USER_ID).build();
 	}
 
 	@Test
-	public void returnsNullWhenNoUserWithGivenIdFound() {
+	public void throwsUserNotFoundExceptionWhenNoUserWithGivenIdFound() {
 		when(userDao.findUserById(USER_ID)).thenReturn(Optional.empty());
 
 		assertThrows(UserNotFoundException.class, () -> userService.getUserById(USER_ID));
 	}
 
 	@Test
-	public void returnsUserWhenUserFoundWithGivenId() {
+	public void returnsUserDTOWhenUserFoundWithGivenId() {
 		when(userDao.findUserById(USER_ID)).thenReturn(Optional.of(user));
+
 		UserDTO userById = userService.getUserById(USER_ID);
 		assertEquals(USER_ID, userById.getId());
+		assertEquals(UserBuilder.FIRST_NAME, userById.getFirstName());
+		assertEquals(UserBuilder.LAST_NAME, userById.getLastName());
+		assertEquals(UserBuilder.EMAIL, userById.getEmail());
+		assertEquals(UserBuilder.DATE_OF_BIRTH, userById.getDateOfBirth());
+
 	}
 }
